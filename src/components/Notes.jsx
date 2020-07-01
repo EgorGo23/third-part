@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import styled from 'styled-components';
 import { store } from '../store';
-import Btn from './Btn';
 
 const NotesContainer = styled.div`
     display: flex;
@@ -50,30 +49,6 @@ const NotesContainer = styled.div`
     }
 `;
 
-const RemoveButtom = styled.button`
-    font-weight: 600;
-    border: none;
-    outline: none;
-    padding: 10px;
-    border-radius: 3px;
-    background: #00A4F7;
-    color: #fff;
-    transition: all 0.4s;
-    cursor: pointer;
-
-    &:disabled {
-        opacity: 0.25;
-    }
-
-    &:hover {
-        &:disabled {
-            background: #00A4F7;
-        }
-        
-        background: #128ACE;
-    }
-`;
-
 const Item = styled.tr`
     user-select: none;
     position: relative;
@@ -89,7 +64,7 @@ const Item = styled.tr`
     }
 
     .open {
-        color: #b614f0;
+        color: #ff0000;
     }
 
     .closed {
@@ -101,33 +76,67 @@ const Item = styled.tr`
     }
 `;
 
-const AddButton = styled.button`
-    font-weight: 600;
-    border: none;
-    outline: none;
-    padding: 10px;
-    border-radius: 3px;
-    background: #00A4F7;
-    color: #fff;
-    transition: all 0.4s;
-    cursor: pointer;
+const FunctionPanel = styled.div`
+    width: 400px;
+    position: relative;
+    height: 95px;
+    display: flex;
+    flex-flow: column;
+    justify-content: space-between;
 
-    &:disabled {
-        opacity: 0.25;
+    .filter-area {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
-    &:hover {
-        &:disabled {
-            background: #00A4F7;
+    .search-area {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    select {
+        border: none;
+        outline: none;
+        height: 30px;
+        width: 175px;
+        border-radius: 5px;
+        margin-right: 20px;
+        option {
+            font-size: 15px;
         }
-        
-        background: #128ACE;
+        &:focus {
+            border: none;
+            outline: none;
+        }
+    }
+
+    input {
+        border: none;
+        outline: none;
+        border-bottom: 2px solid #DADADA;
+        width: 274px;
+        height: 30px;
+
+        &:focus {
+            border: none;
+            outline: none;
+            border-bottom: 2px solid #00A4F7;
+        }
     }
 `;
 
 const Notes = () => {
     const { globalState, dispatch } = useContext(store);
     const { noteList } = globalState;
+
+    const [state, setState] = useState({
+        filterState: 'open',
+        searchState: '',
+    })
 
     const removeItem = (id) => {
         dispatch({ type: 'REMOVE_ITEM', payload: id });
@@ -144,48 +153,111 @@ const Notes = () => {
         } });
     }
 
-    return (
-        <NotesContainer>
-            <table>
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Заголовок</th>
-                        <th>Описание</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        noteList.map(({ id, note, status }) => {
-                            return (
-                                <Item key={id}>
-                                    <td onClick={() => toggleItem(id)}></td>
-                                    <td onClick={() => toggleItem(id)}>
-                                        <span className={status}>{note.header}</span>
-                                    </td>
-                                    <td onClick={() => toggleItem(id)}>
-                                        <span className={status}>{note.desc}</span>
-                                    </td>
-                                    <td>
-                                        <RemoveButtom
-                                            type='button'
-                                            onClick={() => removeItem(id)}                                         
-                                        >
-                                            &ndash;
-                                        </RemoveButtom>
-                                    </td>
-                                </Item>
-                            )
-                        })
-                    }
-                </tbody>
-            </table>
+    const filterByStatus = () => {
+        if (state.filterState === 'open' || state.filterState === 'closed' || state.filterState === 'work') {
+            dispatch({ type: 'FILTER_NOTES', payload: state.filterState });
+        }
 
-            <AddButton onClick={() => toCreateTask()}>
-                Добавить задачу
-            </AddButton>
-        </NotesContainer>
+        return;
+    }
+
+    const searchNote = () => {
+        dispatch({ type: 'SEARCH_ITEM', payload: state.searchState });
+    }
+
+    const handelFunctionsInput = ({ target }) => {
+        if (target.name === 'filter') {
+            setState({
+                ...state,
+                filterState: target.value
+            })
+        }
+
+        if (target.name === 'search') {
+            setState({
+                ...state,
+                searchState: target.value
+            })
+        }
+    }
+    
+    return (
+        <>
+            <FunctionPanel>
+                <div className='filter-area'>
+                    <select name='filter' value={state.filterState} onChange={(e) => handelFunctionsInput(e)}>
+                        <option value='open'>Открытые задачи</option>
+                        <option value='work'>В работе</option>
+                        <option value='closed'>Закрытые задачи</option>
+                    </select>
+                    <button 
+                        className='btn'
+                        onClick={filterByStatus}
+                        disabled={noteList.length === 0 || state.filterState.length === 0}
+                    >
+                        Фильтр по статусам
+                    </button>
+                </div>
+                <div className='search-area'>
+                    <input
+                        type='text'
+                        name='search'
+                        value={state.searchState}
+                        onChange={(e) => handelFunctionsInput(e)}
+                        placeholder='Введите полное название задачи или часть'
+                    />
+                    <button 
+                        className='btn'
+                        onClick={searchNote}
+                        disabled={noteList.length === 0 || state.searchState.length === 0}
+                    >
+                        Поиск
+                    </button>
+                </div>
+            </FunctionPanel>
+            <NotesContainer>
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Заголовок</th>
+                            <th>Описание</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {
+                            noteList.map(({ id, note, status }) => {
+                                return (
+                                    <Item key={id}>
+                                        <td onClick={() => toggleItem(id)}></td>
+                                        <td onClick={() => toggleItem(id)}>
+                                            <span className={status}>{note.header}</span>
+                                        </td>
+                                        <td onClick={() => toggleItem(id)}>
+                                            <span className={status}>{note.desc}</span>
+                                        </td>
+                                        <td>
+                                            <button
+                                                type='button'
+                                                className='btn'
+                                                onClick={() => removeItem(id)}                                         
+                                            >
+                                                &ndash;
+                                            </button>
+                                        </td>
+                                    </Item>
+                                )
+                            })
+                        }
+                    </tbody>
+                </table>
+
+                <button className='btn' onClick={() => toCreateTask()}>
+                    Добавить задачу
+                </button>
+            </NotesContainer>
+        </>
     )
 }
 

@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { store } from '../store';
 import styled from 'styled-components';
 import Form from './Form';
@@ -18,6 +17,8 @@ const AppContainer = styled.div`
         opacity: 0.7;
     }
 `;
+
+
 
 const renderScreen = (screens) => {
     for (let screen in screens) {
@@ -39,7 +40,6 @@ const App = () => {
     const { globalState, dispatch } = useContext(store);
     const { activeScreen } = globalState;
 
-
     return (
         <AppContainer>
             <h1>TODO LIST</h1>
@@ -47,8 +47,6 @@ const App = () => {
             {
                 renderScreen(activeScreen)
             }
-            
-            
         </AppContainer>
     )
 }

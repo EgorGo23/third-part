@@ -1,4 +1,5 @@
 import React, { createContext, useReducer } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 const initialState = {
   activeScreen: {
@@ -9,7 +10,11 @@ const initialState = {
     header: '',
     desc: '',
   },
-  noteList: [],
+  noteList: [
+    {id: uuidv4(), note: { header: 'Покупки', desc: 'Купить продукты' }, status: 'open'},
+    {id: uuidv4(), note: { header: 'Спорт', desc: 'Сходить на тренеровку' }, status: 'work'},
+    {id: uuidv4(), note: { header: 'Работа', desc: 'Сделать тестовое задание' }, status: 'closed'}
+  ],
 };
 
 const store = createContext(initialState);
@@ -22,7 +27,8 @@ const [globalState, dispatch] = useReducer((state, { type, payload }) => {
             return {
               ...state,
               activeScreen: payload
-            }
+            };
+
           case 'CHANGE_HEADER_TEXT': 
             return {
               ...state,
@@ -60,7 +66,6 @@ const [globalState, dispatch] = useReducer((state, { type, payload }) => {
             };
           
           case 'REMOVE_ITEM': 
-            console.log(payload);
             return {
               ...state,
               noteList: state.noteList.filter((element) => element.id !== payload)
@@ -99,6 +104,18 @@ const [globalState, dispatch] = useReducer((state, { type, payload }) => {
                 ...state.noteList.slice(currentElementIndex + 1),
               ] 
             };
+          case 'FILTER_NOTES':          
+            return {
+              ...state,
+              noteList: state.noteList.filter((element) => element.status === payload)
+            }
+
+          case 'SEARCH_ITEM':
+            console.log(state.noteList)
+            return {
+              ...state,
+              noteList: state.noteList.filter((element) => element.note.header.toLowerCase().includes(payload.toLowerCase()))
+            }   
           default:
             throw new Error();
       }

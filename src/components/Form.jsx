@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { store } from '../store';
-import Btn from './Btn';
 
 const FormContainer = styled.form`
     margin: 0 auto;
@@ -79,6 +78,7 @@ const Form = () => {
     }
 
     return (
+        
         <FormContainer onSubmit={(e) => handleSubmit(e)}>
             <input 
                 type='text'
@@ -94,7 +94,7 @@ const Form = () => {
                 onChange={(e) => handleChange(e)}
                 placeholder='Описание'
             />
-            <Btn type='submit'>Добавить</Btn>
+            <button className='btn' type='submit'>Добавить</button>
         </FormContainer>
     )
 }
